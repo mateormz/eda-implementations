@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -66,35 +64,28 @@ struct FractionalCascading {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    for (int test = 0; test < 200; ++test) {
-        int k = rng() % 20 + 1;
-        vector<vector<int>> lists(k);
-        for (auto &L : lists) {
-            L.resize(rng() % 50);
-            for (int &x : L) x = rng() % 200;
-            sort(L.begin(), L.end());
-        }
-        FractionalCascading<int> F(lists);
-        for (int it = 0; it < 300; ++it) {
-            int x = (int)(rng() % 220) - 10;
-            vector<int> result = F.lower_bounds(x);
-            for (int i = 0; i < k; ++i) {
-                assert(result[i] == lower_bound(lists[i].begin(), lists[i].end(), x) - lists[i].begin());
-            }
-        }
-    }
-
-    int k = 100, n = 10000;
-    vector<vector<int>> lists(k, vector<int>(n));
+    int k;
+    cin >> k;
+    vector<vector<long long>> lists(k);
     for (auto &L : lists) {
-        for (int &x : L) x = rng();
+        int m;
+        cin >> m;
+        L.resize(m);
+        for (auto &x : L) cin >> x;
         sort(L.begin(), L.end());
     }
-    FractionalCascading<int> F(lists);
-    cout << "tamaño total: " << F.total_size() << " (original " << (long long)k * n << ")" << '\n';
+    FractionalCascading<long long> F(lists);
+    int q;
+    cin >> q;
+    while (q--) {
+        long long x;
+        cin >> x;
+        vector<int> result = F.lower_bounds(x);
+        for (int i = 0; i < k; ++i) cout << result[i] << (i + 1 < k ? ' ' : '\n');
+    }
 
-    cout << "FractionalCascading OK" << '\n';
     return 0;
 }

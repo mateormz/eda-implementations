@@ -10,12 +10,12 @@ template<typename build_type>
 void merge(vector<build_type> &l, vector<build_type> &r, vector<build_type> &res, int dim) {
     int at = 0;
     for(auto &e : l) {
-        while (at < r.size() and r[at][dim] < e[dim]) {
+        while (at < (int)r.size() and r[at][dim] < e[dim]) {
             res.emplace_back(r[at++]);
         }
         res.emplace_back(e);
     }
-    while (at < r.size()) {
+    while (at < (int)r.size()) {
         res.emplace_back(r[at++]);
     }
 }
@@ -159,7 +159,8 @@ struct TrivialRangeTree {
 };
 
 int main() {
-    cin.tie(0) -> sync_with_stdio(false);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, q;
     cin >> n >> q;
     vector<array<int, 3>> a(n);

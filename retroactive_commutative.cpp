@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -19,14 +17,12 @@ struct PartiallyRetroactiveArray {
     PartiallyRetroactiveArray(int n) : current(n, data_type(0)) {}
 
     void insert(long long time, int position, const data_type &delta) {
-        assert(!timeline.count(time));
         timeline[time] = {position, delta};
         current[position] += delta;
     }
 
     void erase(long long time) {
         auto it = timeline.find(time);
-        assert(it != timeline.end());
         current[it -> second.position] -= it -> second.delta;
         timeline.erase(it);
     }
@@ -37,33 +33,32 @@ struct PartiallyRetroactiveArray {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int n = 20;
+    int n, q;
+    cin >> n >> q;
     PartiallyRetroactiveArray<long long> A(n);
-    map<long long, pair<int, long long>> brute;
-    for (int it = 0; it < 5000; ++it) {
-        if (brute.empty() or rng() % 3) {
-            long long time = rng() % 100000;
-            if (brute.count(time)) continue;
-            int position = rng() % n;
-            long long delta = (long long)(rng() % 2001) - 1000;
-            A.insert(time, position, delta);
-            brute[time] = {position, delta};
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            long long t, d;
+            int i;
+            cin >> t >> i >> d;
+            A.insert(t, i - 1, d);
+        }
+        else if (type == 2) {
+            long long t;
+            cin >> t;
+            A.erase(t);
         }
         else {
-            auto it = brute.begin();
-            advance(it, rng() % brute.size());
-            A.erase(it -> first);
-            brute.erase(it);
-        }
-        if (it % 50 == 0) {
-            vector<long long> expected(n, 0);
-            for (auto &[time, op] : brute) expected[op.first] += op.second;
-            for (int i = 0; i < n; ++i) assert(A.query(i) == expected[i]);
+            int i;
+            cin >> i;
+            cout << A.query(i - 1) << '\n';
         }
     }
 
-    cout << "PartiallyRetroactiveArray OK" << '\n';
     return 0;
 }

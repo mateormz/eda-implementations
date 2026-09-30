@@ -2,8 +2,6 @@
 #include <vector>
 #include <set>
 #include <optional>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -49,7 +47,6 @@ struct FullyRetroactivePredecessor {
     }
 
     void insert_erase_operation(int id, int time) {
-        assert(elements[id].death == T and elements[id].birth <= time);
         place(elements[id], false);
         elements[id].death = time;
         place(elements[id], true);
@@ -87,49 +84,44 @@ struct FullyRetroactivePredecessor {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int T = 200;
-    FullyRetroactivePredecessor<int> P(T);
-    struct Brute { int value, birth, death; bool alive; };
-    vector<Brute> brute;
-
-    for (int it = 0; it < 5000; ++it) {
-        int op = rng() % 4;
-        if (brute.empty() or op == 0) {
-            int time = rng() % T, value = rng() % 1000;
-            P.insert_operation(time, value);
-            brute.push_back({value, time, T, true});
+    int T, q;
+    cin >> T >> q;
+    FullyRetroactivePredecessor<long long> P(T);
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            int t;
+            long long x;
+            cin >> t >> x;
+            P.insert_operation(t - 1, x);
+        }
+        else if (type == 2) {
+            int id;
+            cin >> id;
+            P.delete_insert_operation(id - 1);
+        }
+        else if (type == 3) {
+            int id, t;
+            cin >> id >> t;
+            P.insert_erase_operation(id - 1, t - 1);
+        }
+        else if (type == 4) {
+            int id;
+            cin >> id;
+            P.delete_erase_operation(id - 1);
         }
         else {
-            int id = rng() % brute.size();
-            if (!brute[id].alive) continue;
-            if (op == 1) {
-                P.delete_insert_operation(id);
-                brute[id].alive = false;
-            }
-            else if (op == 2 and brute[id].death == T) {
-                int time = brute[id].birth + rng() % (T - brute[id].birth + 1);
-                P.insert_erase_operation(id, time);
-                brute[id].death = time;
-            }
-            else if (op == 3 and brute[id].death != T) {
-                P.delete_erase_operation(id);
-                brute[id].death = T;
-            }
-        }
-        for (int q = 0; q < 5; ++q) {
-            int time = rng() % T, x = rng() % 1000;
-            optional<int> expected;
-            for (auto &e : brute) {
-                if (e.alive and e.birth <= time and time < e.death and e.value <= x) {
-                    if (!expected or *expected < e.value) expected = e.value;
-                }
-            }
-            assert(P.predecessor(time, x) == expected);
+            int t;
+            long long x;
+            cin >> t >> x;
+            optional<long long> result = P.predecessor(t - 1, x);
+            cout << (result ? *result : -1) << '\n';
         }
     }
 
-    cout << "FullyRetroactivePredecessor OK" << '\n';
     return 0;
 }

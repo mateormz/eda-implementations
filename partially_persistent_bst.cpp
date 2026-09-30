@@ -1,9 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <set>
 #include <climits>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename key_type>
@@ -32,7 +29,6 @@ struct PartiallyPersistentBST {
     };
 
     vector<Node*> version_roots;
-    int node_count = 0;
 
     PartiallyPersistentBST() {
         version_roots.push_back(nullptr);
@@ -53,7 +49,6 @@ struct PartiallyPersistentBST {
     }
 
     Node* new_node(const key_type &key, Node *left = nullptr, Node *right = nullptr) {
-        ++node_count;
         return new Node(key, left, right);
     }
 
@@ -118,26 +113,27 @@ struct PartiallyPersistentBST {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    PartiallyPersistentBST<int> T;
-    vector<set<int>> brute = {{}};
-    int operations = 3000;
-    for (int it = 0; it < operations; ++it) {
-        int key = rng() % 100000;
-        T.insert(key);
-        brute.push_back(brute.back());
-        brute.back().insert(key);
-    }
-    for (int v = 0; v < T.versions(); v += 7) {
-        assert(T.inorder(v) == vector<int>(brute[v].begin(), brute[v].end()));
-        for (int it = 0; it < 20; ++it) {
-            int key = rng() % 100000;
-            assert(T.contains(v, key) == (brute[v].count(key) == 1));
+    int q;
+    cin >> q;
+    PartiallyPersistentBST<long long> T;
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            long long x;
+            cin >> x;
+            T.insert(x);
+        }
+        else {
+            int v;
+            long long x;
+            cin >> v >> x;
+            cout << (T.contains(v, x) ? "YES" : "NO") << '\n';
         }
     }
-    cout << "nodos creados: " << T.node_count << " para " << operations << " inserciones" << '\n';
 
-    cout << "PartiallyPersistentBST OK" << '\n';
     return 0;
 }

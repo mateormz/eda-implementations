@@ -1,7 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -18,7 +16,6 @@ struct PersistentArray {
     vector<Node*> version_roots;
 
     PersistentArray(const vector<data_type> &a) : n(a.size()) {
-        assert(n > 0);
         version_roots.push_back(build(0, n - 1, a));
     }
 
@@ -70,26 +67,28 @@ struct PersistentArray {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int n = 50;
-    vector<int> a(n);
-    for (int &x : a) x = rng() % 100;
-
-    PersistentArray<int> A(a);
-    vector<vector<int>> brute = {a};
-    for (int it = 0; it < 5000; ++it) {
-        int v = rng() % A.versions();
-        int pos = rng() % n;
-        int value = rng() % 100;
-        A.set(v, pos, value);
-        brute.push_back(brute[v]);
-        brute.back()[pos] = value;
+    int n;
+    cin >> n;
+    vector<long long> a(n);
+    for (auto &x : a) cin >> x;
+    PersistentArray<long long> A(a);
+    int q;
+    cin >> q;
+    while (q--) {
+        int type, v, i;
+        cin >> type >> v >> i;
+        if (type == 1) {
+            long long x;
+            cin >> x;
+            A.set(v, i - 1, x);
+        }
+        else {
+            cout << A.get(v, i - 1) << '\n';
+        }
     }
-    for (int v = 0; v < A.versions(); ++v) {
-        for (int i = 0; i < n; ++i) assert(A.get(v, i) == brute[v][i]);
-    }
 
-    cout << "PersistentArray OK" << '\n';
     return 0;
 }

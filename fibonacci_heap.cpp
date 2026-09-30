@@ -1,9 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <functional>
-#include <set>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename key_type, typename compare = less<key_type>>
@@ -77,7 +74,6 @@ struct FibonacciHeap {
     }
 
     const key_type& minimum() const {
-        assert(min_node != nullptr);
         return min_node -> key;
     }
 
@@ -131,7 +127,6 @@ struct FibonacciHeap {
 
     key_type extract_min() {
         Node *z = min_node;
-        assert(z != nullptr);
         if (z -> child != nullptr) {
             Node *c = z -> child;
             do {
@@ -176,7 +171,6 @@ struct FibonacciHeap {
     }
 
     void decrease_key(Node *x, const key_type &key) {
-        assert(!cmp(x -> key, key));
         x -> key = key;
         Node *y = x -> parent;
         if (y != nullptr and cmp(x -> key, y -> key)) {
@@ -201,54 +195,38 @@ struct FibonacciHeap {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    using key = pair<int, int>;
-    FibonacciHeap<key> H;
-    vector<FibonacciHeap<key>::Node*> handle;
-    vector<bool> alive;
-    set<key> brute;
-
-    for (int it = 0; it < 100000; ++it) {
-        int op = rng() % 10;
-        if (brute.empty() or op < 4) {
-            key k = {(int)(rng() % 1000), (int)handle.size()};
-            handle.push_back(H.insert(k));
-            alive.push_back(true);
-            brute.insert(k);
+    int n, q;
+    cin >> n >> q;
+    FibonacciHeap<pair<long long, int>> H;
+    vector<FibonacciHeap<pair<long long, int>>::Node*> handle(n + q + 1, nullptr);
+    for (int i = 1; i <= n; ++i) {
+        long long a;
+        cin >> a;
+        handle[i] = H.insert({a, i});
+    }
+    int next_id = n + 1;
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            long long v;
+            cin >> v;
+            handle[next_id] = H.insert({v, next_id});
+            ++next_id;
         }
-        else if (op < 6) {
-            key k = H.extract_min();
-            assert(k == *brute.begin());
-            brute.erase(brute.begin());
-            alive[k.second] = false;
+        else if (type == 2) {
+            cout << H.extract_min().second << '\n';
         }
         else {
-            int id = rng() % handle.size();
-            if (!alive[id]) continue;
-            key k = handle[id] -> key;
-            brute.erase(k);
-            if (op < 9) {
-                key new_k = {k.first - (int)(rng() % 1000), id};
-                H.decrease_key(handle[id], new_k);
-                brute.insert(new_k);
-            }
-            else {
-                H.erase(handle[id]);
-                alive[id] = false;
-            }
+            int id;
+            long long v;
+            cin >> id >> v;
+            H.decrease_key(handle[id], {v, id});
         }
-        assert(H.size() == (int)brute.size());
-        if (!brute.empty()) assert(H.minimum() == *brute.begin());
     }
 
-    FibonacciHeap<int> A, B;
-    for (int i = 0; i < 100; ++i) A.insert(2 * i);
-    for (int i = 0; i < 100; ++i) B.insert(2 * i + 1);
-    A.merge(B);
-    assert(B.empty() and A.size() == 200);
-    for (int i = 0; i < 200; ++i) assert(A.extract_min() == i);
-
-    cout << "FibonacciHeap OK" << '\n';
     return 0;
 }

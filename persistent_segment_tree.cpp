@@ -1,9 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <set>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -108,82 +105,37 @@ struct PersistentSegmentTree {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    {
-        int n = 40;
-        vector<long long> a(n);
-        for (auto &x : a) x = rng() % 100;
-        PersistentSegmentTree<long long> T(a);
-        vector<vector<long long>> brute = {a};
-        for (int it = 0; it < 3000; ++it) {
-            int v = rng() % T.versions();
-            int pos = rng() % n;
-            long long value = rng() % 100;
-            brute.push_back(brute[v]);
-            if (rng() % 2) {
-                T.set(v, pos, value);
-                brute.back()[pos] = value;
-            }
-            else {
-                T.add(v, pos, value);
-                brute.back()[pos] += value;
-            }
+    int n;
+    cin >> n;
+    vector<long long> a(n);
+    for (auto &x : a) cin >> x;
+    PersistentSegmentTree<long long> T(a);
+    int q;
+    cin >> q;
+    while (q--) {
+        int type, v;
+        cin >> type >> v;
+        if (type == 1) {
+            int i;
+            long long x;
+            cin >> i >> x;
+            T.set(v, i - 1, x);
         }
-        for (int it = 0; it < 20000; ++it) {
-            int v = rng() % T.versions();
-            int x = rng() % n, y = rng() % n;
-            if (x > y) swap(x, y);
-            long long expected = 0;
-            for (int i = x; i <= y; ++i) expected += brute[v][i];
-            assert(T.query(v, x, y) == expected);
+        else if (type == 2) {
+            int i;
+            long long x;
+            cin >> i >> x;
+            T.add(v, i - 1, x);
+        }
+        else {
+            int l, r;
+            cin >> l >> r;
+            cout << T.query(v, l - 1, r - 1) << '\n';
         }
     }
 
-    {
-        int n = 300;
-        vector<int> a(n);
-        for (int &x : a) x = rng() % 1000;
-        vector<int> values = a;
-        sort(values.begin(), values.end());
-        values.erase(unique(values.begin(), values.end()), values.end());
-
-        PersistentSegmentTree<int> T(values.size());
-        for (int i = 0; i < n; ++i) {
-            int pos = lower_bound(values.begin(), values.end(), a[i]) - values.begin();
-            T.add(i, pos, 1);
-        }
-        for (int it = 0; it < 5000; ++it) {
-            int l = rng() % n, r = rng() % n;
-            if (l > r) swap(l, r);
-            int k = rng() % (r - l + 1) + 1;
-            vector<int> window(a.begin() + l, a.begin() + r + 1);
-            nth_element(window.begin(), window.begin() + k - 1, window.end());
-            assert(values[T.kth(l, r + 1, k)] == window[k - 1]);
-        }
-    }
-
-    {
-        int n = 300;
-        vector<int> a(n);
-        for (int &x : a) x = rng() % 30;
-        PersistentSegmentTree<int> T(n);
-        vector<int> last(30, -1), root_after(n);
-        int v = 0;
-        for (int i = 0; i < n; ++i) {
-            if (last[a[i]] != -1) v = T.add(v, last[a[i]], -1);
-            v = T.add(v, i, 1);
-            root_after[i] = v;
-            last[a[i]] = i;
-        }
-        for (int it = 0; it < 5000; ++it) {
-            int l = rng() % n, r = rng() % n;
-            if (l > r) swap(l, r);
-            set<int> distinct(a.begin() + l, a.begin() + r + 1);
-            assert(T.query(root_after[r], l, r) == (int)distinct.size());
-        }
-    }
-
-    cout << "PersistentSegmentTree OK" << '\n';
     return 0;
 }

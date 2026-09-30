@@ -1,7 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -27,13 +25,11 @@ struct PersistentStack {
     }
 
     int pop(int version) {
-        assert(version_roots[version] != nullptr);
         version_roots.push_back(version_roots[version] -> next);
         return (int)version_roots.size() - 1;
     }
 
     const data_type& top(int version) const {
-        assert(version_roots[version] != nullptr);
         return version_roots[version] -> data;
     }
 
@@ -53,40 +49,30 @@ struct PersistentStack {
         for (StackNode *node = version_roots[version]; node != nullptr; node = node -> next) {
             cout << node -> data << ' ';
         }
-        cout << "(fondo)" << '\n';
+        cout << '\n';
     }
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    PersistentStack<int> S;
-    vector<vector<int>> brute = {{}};
-    for (int it = 0; it < 5000; ++it) {
-        int v = rng() % S.versions();
-        if (brute[v].empty() or rng() % 2) {
-            int x = rng() % 1000;
+    int q;
+    cin >> q;
+    PersistentStack<long long> S;
+    while (q--) {
+        int type, v;
+        cin >> type >> v;
+        if (type == 1) {
+            long long x;
+            cin >> x;
             S.push(v, x);
-            brute.push_back(brute[v]);
-            brute.back().push_back(x);
         }
         else {
+            cout << S.top(v) << '\n';
             S.pop(v);
-            brute.push_back(brute[v]);
-            brute.back().pop_back();
         }
     }
-    for (int v = 0; v < S.versions(); ++v) {
-        assert(S.size(v) == (int)brute[v].size());
-        if (!brute[v].empty()) assert(S.top(v) == brute[v].back());
-    }
 
-    int v1 = S.push(0, 1);
-    int v2 = S.push(v1, 2);
-    int v3 = S.push(v1, 3);
-    S.print(v2);
-    S.print(v3);
-
-    cout << "PersistentStack OK" << '\n';
     return 0;
 }

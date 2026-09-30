@@ -2,8 +2,6 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type>
@@ -68,31 +66,22 @@ struct MergeSortTree {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int n = 500;
-    vector<int> a(n);
-    for (int &x : a) x = rng() % 1000;
-    MergeSortTree<int> T(a);
-
-    for (int it = 0; it < 20000; ++it) {
-        int x = rng() % n, y = rng() % n;
-        if (x > y) swap(x, y);
-        int lo = rng() % 1000, hi = rng() % 1000;
-        if (lo > hi) swap(lo, hi);
-        int k = rng() % 1000;
-
-        int in_range = 0, leq = 0, greater_than = 0;
-        for (int i = x; i <= y; ++i) {
-            in_range += lo <= a[i] and a[i] <= hi;
-            leq += a[i] <= k;
-            greater_than += a[i] > k;
-        }
-        assert(T.count(x, y, lo, hi) == in_range);
-        assert(T.count_less_equal(x, y, k) == leq);
-        assert(T.count_greater(x, y, k) == greater_than);
+    int n;
+    cin >> n;
+    vector<long long> a(n);
+    for (auto &x : a) cin >> x;
+    MergeSortTree<long long> T(a);
+    int q;
+    cin >> q;
+    while (q--) {
+        int l, r;
+        long long k;
+        cin >> l >> r >> k;
+        cout << T.count_greater(l - 1, r - 1, k) << '\n';
     }
 
-    cout << "MergeSortTree OK" << '\n';
     return 0;
 }

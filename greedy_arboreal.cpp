@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 struct GreedyArboreal {
@@ -72,35 +70,18 @@ bool is_arborally_satisfied(int n, const vector<vector<int>> &rows) {
 }
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    for (int test = 0; test < 300; ++test) {
-        int n = rng() % 12 + 1, m = rng() % 30 + 1;
-        vector<int> sequence(m);
-        for (int &x : sequence) x = rng() % n;
-        GreedyArboreal G(n);
-        G.run(sequence);
-        for (int t = 0; t < m; ++t) {
-            assert(binary_search(G.rows[t].begin(), G.rows[t].end(), sequence[t]));
-        }
-        assert(is_arborally_satisfied(n, G.rows));
+    int n, m;
+    cin >> n >> m;
+    vector<int> sequence(m);
+    for (int &x : sequence) {
+        cin >> x;
+        --x;
     }
+    GreedyArboreal G(n);
+    cout << G.run(sequence) << '\n';
 
-    assert(!is_arborally_satisfied(3, {{0}, {2}}));
-    assert(is_arborally_satisfied(3, {{0}, {0, 2}}));
-
-    int n = 1 << 12;
-    vector<int> sequential(n), bit_reversal(n);
-    for (int i = 0; i < n; ++i) {
-        sequential[i] = i;
-        int r = 0;
-        for (int b = 0; b < 12; ++b) if (i >> b & 1) r |= 1 << (11 - b);
-        bit_reversal[i] = r;
-    }
-    GreedyArboreal A(n), B(n);
-    cout << "secuencial: " << (double)A.run(sequential) / n << " puntos por acceso" << '\n';
-    cout << "bit-reversal: " << (double)B.run(bit_reversal) / n << " puntos por acceso" << '\n';
-
-    cout << "GreedyArboreal OK" << '\n';
     return 0;
 }

@@ -1,9 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <set>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename key_type>
@@ -17,13 +14,12 @@ struct SplayTree {
     };
 
     Node *root = nullptr;
-    long long rotations = 0;
 
     SplayTree() {}
     SplayTree(const SplayTree&) = delete;
     SplayTree& operator=(const SplayTree&) = delete;
 
-    SplayTree(SplayTree &&other) : root(other.root), rotations(other.rotations) {
+    SplayTree(SplayTree &&other) : root(other.root) {
         other.root = nullptr;
     }
 
@@ -57,7 +53,6 @@ struct SplayTree {
             if (g -> left == p) g -> left = x;
             else g -> right = x;
         }
-        ++rotations;
     }
 
     void splay(Node *x) {
@@ -159,7 +154,6 @@ struct SplayTree {
     }
 
     const key_type& minimum() {
-        assert(root != nullptr);
         Node *x = root;
         while (x -> left != nullptr) x = x -> left;
         splay(x);
@@ -167,7 +161,6 @@ struct SplayTree {
     }
 
     const key_type& maximum() {
-        assert(root != nullptr);
         Node *x = root;
         while (x -> right != nullptr) x = x -> right;
         splay(x);
@@ -195,44 +188,20 @@ struct SplayTree {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    SplayTree<int> T;
-    set<int> brute;
-    for (int it = 0; it < 200000; ++it) {
-        int op = rng() % 3;
-        int key = rng() % 5000;
-        if (op == 0) assert(T.insert(key) == brute.insert(key).second);
-        else if (op == 1) assert(T.erase(key) == (brute.erase(key) == 1));
-        else assert(T.contains(key) == (brute.count(key) == 1));
-        if (it % 20000 == 0 and !brute.empty()) {
-            assert(T.minimum() == *brute.begin());
-            assert(T.maximum() == *brute.rbegin());
-        }
-    }
-    vector<int> keys;
-    T.inorder(keys);
-    assert(keys == vector<int>(brute.begin(), brute.end()));
-
-    for (int it = 0; it < 100; ++it) {
-        int key = rng() % 5000;
-        SplayTree<int> R = T.split(key);
-        vector<int> left_keys, right_keys;
-        T.inorder(left_keys);
-        R.inorder(right_keys);
-        for (int x : left_keys) assert(x <= key);
-        for (int x : right_keys) assert(x > key);
-        assert(left_keys.size() + right_keys.size() == brute.size());
-        T.join(R);
+    int q;
+    cin >> q;
+    SplayTree<long long> T;
+    while (q--) {
+        int type;
+        long long x;
+        cin >> type >> x;
+        if (type == 1) T.insert(x);
+        else if (type == 2) T.erase(x);
+        else cout << (T.contains(x) ? "YES" : "NO") << '\n';
     }
 
-    SplayTree<int> S;
-    int n = 100000;
-    for (int i = 0; i < n; ++i) S.insert(i);
-    S.rotations = 0;
-    for (int i = 0; i < n; ++i) assert(S.contains(i));
-    cout << "acceso secuencial: " << (double)S.rotations / n << " rotaciones por acceso" << '\n';
-
-    cout << "SplayTree OK" << '\n';
     return 0;
 }

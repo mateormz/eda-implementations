@@ -1,15 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename structure_type, typename operation_type>
 struct RollbackRetroactive {
     structure_type structure;
     vector<pair<long long, operation_type>> log;
-    long long work = 0;
 
     int position_of(long long time) const {
         return lower_bound(log.begin(), log.end(), time, [](const pair<long long, operation_type> &e, long long t) { return e.first < t; }) - log.begin();
@@ -18,20 +15,17 @@ struct RollbackRetroactive {
     void rollback(int from) {
         for (int i = (int)log.size() - 1; i >= from; --i) {
             log[i].second.undo(structure);
-            ++work;
         }
     }
 
     void redo(int from) {
         for (int i = from; i < (int)log.size(); ++i) {
             log[i].second.apply(structure);
-            ++work;
         }
     }
 
     void insert(long long time, const operation_type &operation) {
         int i = position_of(time);
-        assert(i == (int)log.size() or log[i].first != time);
         rollback(i);
         log.insert(log.begin() + i, {time, operation});
         redo(i);
@@ -39,7 +33,6 @@ struct RollbackRetroactive {
 
     void erase(long long time) {
         int i = position_of(time);
-        assert(i < (int)log.size() and log[i].first == time);
         rollback(i);
         log.erase(log.begin() + i);
         redo(i);
@@ -52,14 +45,14 @@ struct RollbackRetroactive {
 
 struct StackOperation {
     bool is_push;
-    int value;
+    long long value;
     bool popped;
-    int popped_value;
+    long long popped_value;
 
-    static StackOperation push(int value) { return {true, value, false, 0}; }
+    static StackOperation push(long long value) { return {true, value, false, 0}; }
     static StackOperation pop() { return {false, 0, false, 0}; }
 
-    void apply(vector<int> &stack) {
+    void apply(vector<long long> &stack) {
         if (is_push) {
             stack.push_back(value);
         }
@@ -72,39 +65,41 @@ struct StackOperation {
         }
     }
 
-    void undo(vector<int> &stack) {
+    void undo(vector<long long> &stack) {
         if (is_push) stack.pop_back();
         else if (popped) stack.push_back(popped_value);
     }
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    RollbackRetroactive<vector<int>, StackOperation> R;
-    vector<pair<long long, StackOperation>> brute;
-    for (int it = 0; it < 3000; ++it) {
-        if (brute.empty() or rng() % 3) {
-            long long time = rng() % 100000;
-            bool used = false;
-            for (auto &e : brute) used = used or e.first == time;
-            if (used) continue;
-            StackOperation op = rng() % 2 ? StackOperation::push(rng() % 1000) : StackOperation::pop();
-            R.insert(time, op);
-            brute.push_back({time, op});
+    int q;
+    cin >> q;
+    RollbackRetroactive<vector<long long>, StackOperation> R;
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            long long t, x;
+            cin >> t >> x;
+            R.insert(t, StackOperation::push(x));
+        }
+        else if (type == 2) {
+            long long t;
+            cin >> t;
+            R.insert(t, StackOperation::pop());
+        }
+        else if (type == 3) {
+            long long t;
+            cin >> t;
+            R.erase(t);
         }
         else {
-            int id = rng() % brute.size();
-            R.erase(brute[id].first);
-            brute.erase(brute.begin() + id);
+            cout << (R.now().empty() ? -1 : R.now().back()) << '\n';
         }
-        sort(brute.begin(), brute.end(), [](auto &a, auto &b) { return a.first < b.first; });
-        vector<int> expected;
-        for (auto e : brute) e.second.apply(expected);
-        assert(R.now() == expected);
     }
-    cout << "operaciones rehechas en total: " << R.work << '\n';
 
-    cout << "RollbackRetroactive OK" << '\n';
     return 0;
 }

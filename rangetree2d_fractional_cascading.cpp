@@ -159,6 +159,9 @@ static inline int readInt() {
 }
 
 int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
     {
         size_t cap = 1 << 20;
         inbuf.resize(cap);

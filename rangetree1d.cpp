@@ -69,8 +69,8 @@ struct RangeTree{
 };
 
 int main() {
-    cin.tie(nullptr);
     ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     int n, q;
     if(!(cin >> n >> q)) return 0;

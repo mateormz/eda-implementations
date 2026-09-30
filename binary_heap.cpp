@@ -1,9 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <functional>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename data_type, typename compare = less<data_type>>
@@ -50,12 +49,10 @@ struct BinaryHeap {
     }
 
     const data_type& top() const {
-        assert(!heap.empty());
         return heap[0];
     }
 
     void pop() {
-        assert(!heap.empty());
         heap[0] = heap.back();
         heap.pop_back();
         if (!heap.empty()) sift_down(0);
@@ -82,38 +79,25 @@ void heap_sort(vector<data_type> &a) {
 }
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    BinaryHeap<int> max_heap;
-    vector<int> brute;
-    for (int it = 0; it < 20000; ++it) {
-        if (brute.empty() or rng() % 3) {
-            int x = rng() % 1000;
-            max_heap.push(x);
-            brute.push_back(x);
+    BinaryHeap<long long> H;
+    string operation;
+    while (cin >> operation) {
+        if (operation == "insert") {
+            long long x;
+            cin >> x;
+            H.push(x);
         }
-        else {
-            auto it_max = max_element(brute.begin(), brute.end());
-            assert(max_heap.top() == *it_max);
-            brute.erase(it_max);
-            max_heap.pop();
+        else if (operation == "extract") {
+            cout << H.top() << '\n';
+            H.pop();
+        }
+        else if (operation == "end") {
+            break;
         }
     }
 
-    vector<int> a(1000);
-    for (int &x : a) x = rng() % 100;
-    BinaryHeap<int, greater<int>> min_heap(a);
-    vector<int> sorted_a = a;
-    sort(sorted_a.begin(), sorted_a.end());
-    for (int x : sorted_a) {
-        assert(min_heap.top() == x);
-        min_heap.pop();
-    }
-
-    vector<int> b = a;
-    heap_sort(b);
-    assert(b == sorted_a);
-
-    cout << "BinaryHeap OK" << '\n';
     return 0;
 }

@@ -2,8 +2,6 @@
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename coordinate_type>
@@ -130,33 +128,19 @@ struct RangeTree3D {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int n = 800;
-    vector<array<int, 3>> points(n);
-    for (auto &p : points) p = {(int)(rng() % 100), (int)(rng() % 100), (int)(rng() % 100)};
-    RangeTree3D<int> T(points);
-
-    for (int it = 0; it < 3000; ++it) {
-        array<int, 3> low, high;
-        for (int d = 0; d < 3; ++d) {
-            low[d] = rng() % 100;
-            high[d] = rng() % 100;
-            if (low[d] > high[d]) swap(low[d], high[d]);
-        }
-        vector<array<int, 3>> expected;
-        for (auto &p : points) {
-            bool inside = true;
-            for (int d = 0; d < 3; ++d) inside = inside and low[d] <= p[d] and p[d] <= high[d];
-            if (inside) expected.push_back(p);
-        }
-        assert(T.count(low, high) == (long long)expected.size());
-        vector<array<int, 3>> reported = T.report(low, high);
-        sort(expected.begin(), expected.end());
-        sort(reported.begin(), reported.end());
-        assert(reported == expected);
+    int n, q;
+    cin >> n >> q;
+    vector<array<long long, 3>> points(n);
+    for (auto &p : points) cin >> p[0] >> p[1] >> p[2];
+    RangeTree3D<long long> T(points);
+    while (q--) {
+        array<long long, 3> low, high;
+        cin >> low[0] >> low[1] >> low[2] >> high[0] >> high[1] >> high[2];
+        cout << T.count(low, high) << '\n';
     }
 
-    cout << "RangeTree3D OK" << '\n';
     return 0;
 }

@@ -1,10 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include <queue>
 #include <algorithm>
-#include <cassert>
-#include <random>
 using namespace::std;
 
 template<typename key_type>
@@ -140,7 +137,6 @@ struct PartiallyRetroactivePriorityQueue {
     }
 
     void insert_push(int t, const key_type &k) {
-        assert(type[t] == EMPTY);
         int bridge = last_bridge_at_or_before(t);
         Best best = bridge < T ? query_max_out(1, 0, T - 1, bridge, T - 1) : Best{false, key_type(), -1};
         type[t] = INSERT;
@@ -156,17 +152,14 @@ struct PartiallyRetroactivePriorityQueue {
     }
 
     void insert_delete_min(int t) {
-        assert(type[t] == EMPTY);
         int bridge = first_bridge_after(t);
         Best best = query_min_in(1, 0, T - 1, 0, bridge - 1);
-        assert(best.valid);
         type[t] = DELETE_MIN;
         refresh(t);
         mark(best.position, false);
     }
 
     void erase_push(int t) {
-        assert(type[t] == INSERT);
         if (in_now[t]) {
             mark(t, false);
             type[t] = EMPTY;
@@ -175,24 +168,20 @@ struct PartiallyRetroactivePriorityQueue {
         }
         int bridge = first_bridge_after(t);
         Best best = query_min_in(1, 0, T - 1, 0, bridge - 1);
-        assert(best.valid);
         type[t] = EMPTY;
         refresh(t);
         mark(best.position, false);
     }
 
     void erase_delete_min(int t) {
-        assert(type[t] == DELETE_MIN);
         int bridge = last_bridge_at_or_before(t);
         Best best = query_max_out(1, 0, T - 1, bridge, T - 1);
-        assert(best.valid);
         type[t] = EMPTY;
         refresh(t);
         mark(best.position, true);
     }
 
     const key_type& minimum() const {
-        assert(!now.empty());
         return *now.begin();
     }
 
@@ -206,56 +195,40 @@ struct PartiallyRetroactivePriorityQueue {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    for (int test = 0; test < 50; ++test) {
-        int T = rng() % 60 + 1;
-        PartiallyRetroactivePriorityQueue<int> Q(T);
-        vector<int> slot_type(T, 0), slot_key(T, 0);
-        int next_key = 0;
-
-        auto simulate = [&](const vector<int> &types, const vector<int> &keys, vector<int> &result) {
-            priority_queue<int, vector<int>, greater<int>> pq;
-            for (int t = 0; t < T; ++t) {
-                if (types[t] == 1) pq.push(keys[t]);
-                else if (types[t] == 2) {
-                    if (pq.empty()) return false;
-                    pq.pop();
-                }
-            }
-            result.clear();
-            while (!pq.empty()) {
-                result.push_back(pq.top());
-                pq.pop();
-            }
-            return true;
-        };
-
-        for (int it = 0; it < 400; ++it) {
-            int t = rng() % T;
-            vector<int> types = slot_type, keys = slot_key, expected;
-            int op = rng() % 2;
-            if (types[t] == 0) {
-                if (op == 0) {
-                    types[t] = 1;
-                    keys[t] = (int)(rng() % 1000) * 1000 + next_key++ % 1000;
-                }
-                else types[t] = 2;
-            }
-            else types[t] = 0;
-            if (!simulate(types, keys, expected)) continue;
-
-            if (slot_type[t] == 0 and types[t] == 1) Q.insert_push(t, keys[t]);
-            else if (slot_type[t] == 0 and types[t] == 2) Q.insert_delete_min(t);
-            else if (slot_type[t] == 1) Q.erase_push(t);
-            else Q.erase_delete_min(t);
-            slot_type = types;
-            slot_key = keys;
-
-            assert(Q.current() == expected);
+    int T, q;
+    cin >> T >> q;
+    PartiallyRetroactivePriorityQueue<long long> Q(T);
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            int t;
+            long long k;
+            cin >> t >> k;
+            Q.insert_push(t - 1, k);
+        }
+        else if (type == 2) {
+            int t;
+            cin >> t;
+            Q.insert_delete_min(t - 1);
+        }
+        else if (type == 3) {
+            int t;
+            cin >> t;
+            Q.erase_push(t - 1);
+        }
+        else if (type == 4) {
+            int t;
+            cin >> t;
+            Q.erase_delete_min(t - 1);
+        }
+        else {
+            cout << (Q.size() == 0 ? -1 : Q.minimum()) << '\n';
         }
     }
 
-    cout << "PartiallyRetroactivePriorityQueue OK" << '\n';
     return 0;
 }

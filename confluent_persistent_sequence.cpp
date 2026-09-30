@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <cassert>
 #include <random>
 using namespace::std;
 
@@ -127,53 +126,44 @@ struct ConfluentPersistentSequence {
 };
 
 int main() {
-    mt19937 rng(3014);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    ConfluentPersistentSequence<int> S;
-    vector<vector<int>> brute = {{}};
-    for (int i = 0; i < 5; ++i) {
-        vector<int> a(rng() % 20 + 1);
-        for (int &x : a) x = rng() % 1000;
-        S.create(a);
-        brute.push_back(a);
-    }
-    for (int it = 0; it < 3000; ++it) {
-        int op = rng() % 3;
-        int v = rng() % S.versions();
-        if (op == 0) {
-            int w = rng() % S.versions();
-            if (brute[v].size() + brute[w].size() > 3000) continue;
-            S.concat(v, w);
-            vector<int> c = brute[v];
-            c.insert(c.end(), brute[w].begin(), brute[w].end());
-            brute.push_back(c);
+    int n;
+    cin >> n;
+    vector<long long> a(n);
+    for (auto &x : a) cin >> x;
+    ConfluentPersistentSequence<long long> S;
+    S.create(a);
+    int q;
+    cin >> q;
+    while (q--) {
+        int type;
+        cin >> type;
+        if (type == 1) {
+            int u, v;
+            cin >> u >> v;
+            S.concat(u, v);
         }
-        else if (op == 1) {
-            int len = brute[v].size();
-            int l = rng() % (len + 1), r = rng() % (len + 1);
-            if (l > r) swap(l, r);
-            S.substring(v, l, r);
-            brute.push_back(vector<int>(brute[v].begin() + l, brute[v].begin() + r));
+        else if (type == 2) {
+            int v;
+            long long l, r;
+            cin >> v >> l >> r;
+            S.substring(v, l - 1, r);
+        }
+        else if (type == 3) {
+            int v;
+            long long i, x;
+            cin >> v >> i >> x;
+            S.set(v, i - 1, x);
         }
         else {
-            if (brute[v].empty()) continue;
-            int pos = rng() % brute[v].size();
-            int value = rng() % 1000;
-            S.set(v, pos, value);
-            brute.push_back(brute[v]);
-            brute.back()[pos] = value;
+            int v;
+            long long i;
+            cin >> v >> i;
+            cout << S.get(v, i - 1) << '\n';
         }
     }
-    for (int v = 0; v < S.versions(); ++v) assert(S.to_vector(v) == brute[v]);
 
-    int v = S.create({1, 2, 3});
-    for (int i = 0; i < 40; ++i) v = S.concat(v, v);
-    assert(S.length(v) == 3LL << 40);
-    for (int it = 0; it < 1000; ++it) {
-        long long pos = (long long)(rng() % 3) + 3 * (long long)(((unsigned long long)rng() << 32 | rng()) % (1LL << 40));
-        assert(S.get(v, pos) == pos % 3 + 1);
-    }
-
-    cout << "ConfluentPersistentSequence OK" << '\n';
     return 0;
 }
